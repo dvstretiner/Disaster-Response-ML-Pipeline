@@ -1,6 +1,7 @@
 import json
 import plotly
 import pandas as pd
+import re
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -8,18 +9,32 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
+from plotly.graph_objs import Histogram
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 from utils import NamedEntityChecker
+import plotly.express as px
 
 
 
 app = Flask(__name__)
 
 def tokenize(text):
+    
+    '''
+    INPUT
+    Text of the disaster message
+
+    OUTPUT
+    Cleaned tokens: lower case, without punctuation, lemmatized
+    '''
+    
+    #Remove punctuation, convert to lower case. Instantiate a Lemmatizer
+    text = re.sub(r"[^a-zA-z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
-
+    
+    #Lemmatize tokens, strip of extra spaces, return clean tokens
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
@@ -27,11 +42,48 @@ def tokenize(text):
 
     return clean_tokens
 
-# load data
+categ_dict = {}
+
+def top_n_categories(data, n):
+    
+    '''
+    INPUT
+    dataframe, top number to select
+    
+    OUTPUT
+    x_values: category names for top N categories
+    y_values: category counts for top N categories
+    
+    categories exclude the first column 'related' b/c it is the most prevalent
+    '''
+    #Drop any duplicate rows
+    data = data.drop_duplicates()
+    
+    #Get categories and counts, excluding the 'related' group
+    categories = data.columns[5:]
+    counts = [df[category].sum() for category in categories]
+    
+    #Create a dictionary of key, value pairs for categories & counts
+    for key in categories:
+        for value in counts:
+            categ_dict[key] = value
+            counts.remove(value)
+            break
+            
+    #Obtain a sorted list in descending order, grab the top n
+    sorted_categories_top_n = sorted(categ_dict.items(), key=lambda x: x[1], reverse=True)[:n]
+    
+    #Obtain x and y values
+    top_n_categories = [str.replace(x[0], '_', ' ').title() for x in sorted_categories_top_n]
+    top_n_counts = [y[1] for y in sorted_categories_top_n]
+    
+    return top_n_categories, top_n_counts
+
+# load data from the database
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('DisasterMessages', engine)
 
-# load model
+# load model from the pickle file
 model = joblib.load("../models/classifier.pkl")
 
 
@@ -40,13 +92,17 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/index')
 def index():
     
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
+    # extract data for a bar chart of genres
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # extract data for a bar chart of top 10 categories present in data (excluding 'related')
+    top_10_categories, top_10_counts = top_n_categories(df, 10)
+    
+    # extract data for a histogram of word counts in the disaster messages
+    word_counts = [len(tokenize(text)) for text in df['message'].drop_duplicates()]
+    
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
@@ -65,7 +121,65 @@ def index():
                     'title': "Genre"
                 }
             }
+        }, 
+        
+        {
+            'data': [
+                Histogram(
+                    x=word_counts,
+                    xbins=dict( # bins used for histogram
+                          start=0,
+                          end=200,
+                          size=10                        
+                            ),
+                   marker=dict(
+                        color='#468499'
+                   )
+                    
+                )
+            ],
+            
+            'layout': {
+                'title': 'Distribution of Word Counts in Disaster Messages',
+                'yaxis': {
+                    'title': "Number of Messages"
+                },
+                'xaxis': {
+                    'title': "Word Count Bins",
+                    
+                },
+                
+                'plot_bgcolor': '#DCDCDC'
+                
+            }
+        }, 
+        
+
+        {
+            'data': [
+                Bar(
+                    x=top_10_categories,
+                    y=top_10_counts,
+                    marker =  {
+                        'color':  'rgb(142,124,195)'
+                            }
+                )
+                ],
+
+            'layout': {
+                'title': 'Top 10 Disaster Message Categories',
+                'yaxis': {
+                    'title': "Number of Positive Instances"
+                },
+                'xaxis': {
+                    'title': "Top 10 Categories"
+                }, 
+                
+                'plot_bgcolor': '#DCDCDC'
+                
+            }
         }
+               
     ]
     
     # encode plotly graphs in JSON
