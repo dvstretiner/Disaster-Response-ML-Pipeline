@@ -69,24 +69,24 @@ This project could be viewed as beta version of such tool. Although, it does not
 Original data consists of two files: disaster_categories.csv & disaster_messages.csv. Categories were obtained based on the data in the messages file. 
 Files exist within the following folder structure:
 
-- app
+- **app**
 	- template
-		- master.html  		*main page of web app*
-		- go.html  			*classification result page of web app*
-	- run.py  				*Flask file that runs app*
-	- utils.py 				*Custom transformer*
+		- `master.html`  		*main page of web app*
+		- `go.html`  			*classification result page of web app*
+	- `run.py`  				*Flask file that runs app*
+	- `utils.py` 				*Custom transformer*
 
-- data
-	- disaster_categories.csv  	*data to process*
-	- disaster_messages.csv  	*data to process*
-	- process_data.py
-	- DisasterResponse.db   	*database to save clean data to*
+- **data**
+	- `disaster_categories.csv`  	*data to process*
+	- `disaster_messages.csv`  	*data to process*
+	- `process_data.py`
+	- `DisasterResponse.db`   	*database to save clean data to*
 
-- models
-	- train_classifier.py
-	- utils.py 					*Custom transformer*
+- **models**
+	- `train_classifier.py`
+	- `utils.py`					*Custom transformer*
 
-The train_classifier.py file contains an ML pipeline consisting of three transformers and one RandomForestClassifier. Three transformers include CountVectorizer, TfidfTransformer and a custom transformer called NamedEntityChecker, which checks whether or not the message contains a named entity ('NNP' part of speech based on pos_tag). The pipeline is fine-tuned using GridSearchCV for optimal results.
+The `train_classifier.py` file contains an ML pipeline consisting of three transformers and one RandomForestClassifier. Three transformers include CountVectorizer, TfidfTransformer and a custom transformer called NamedEntityChecker, which checks whether or not the message contains a named entity ('NNP' part of speech based on pos_tag). The pipeline is fine-tuned using GridSearchCV for optimal results.
 
 
 ## 4. How to Interact with this project
