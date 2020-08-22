@@ -70,21 +70,21 @@ Original data consists of two files: disaster_categories.csv & disaster_messages
 Files exist within the following folder structure:
 
 - app
-| - template
-| |- master.html  # main page of web app
-| |- go.html  # classification result page of web app
-|- run.py  # Flask file that runs app
-|- utils.py # Custom transformer
+	- template
+		- master.html  *main page of web app
+		- go.html  *classification result page of web app
+	- run.py  *Flask file that runs app
+	- utils.py *Custom transformer
 
 - data
-|- disaster_categories.csv  # data to process 
-|- disaster_messages.csv  # data to process
-|- process_data.py
-|- DisasterResponse.db   # database to save clean data to
+	- disaster_categories.csv  *data to process 
+	- disaster_messages.csv  *data to process
+	- process_data.py
+	- DisasterResponse.db   *database to save clean data to
 
 - models
-|- train_classifier.py
-|- utils.py # Custom transformer
+	- train_classifier.py
+	- utils.py *Custom transformer
 
 The train_classifier.py file contains an ML pipeline consisting of three transformers and one RandomForestClassifier. Three transformers include CountVectorizer, TfidfTransformer and a custom transformer called NamedEntityChecker, which checks whether or not the message contains a named entity ('NNP' part of speech based on pos_tag). The pipeline is fine-tuned using GridSearchCV for optimal results.
 
@@ -92,11 +92,11 @@ The train_classifier.py file contains an ML pipeline consisting of three transfo
 ## 4. How to Interact with this project
 In order to output a web app with results, first the data must be cleaned and loaded into the database (ETL), then a classifier is run to produce a pickle file with the model (ML pipeline), finally a flask file containing code for the web app is run. 
 
-1. ETL pipeline: data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db
-2. ML pipeline: models/train_classifier.py data/DisasterResponse.db, which would save the classifier.pkl file (it's about 180 MB)
-3. Flask file: run.py
+1. **ETL pipeline**: data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db
+2. **ML pipeline**: models/train_classifier.py data/DisasterResponse.db, which would save the classifier.pkl file (it's about 180 MB)
+3. **Flask file**: run.py
 
-master.html contains three visualizations based on the existing disaster response data. In the text field, you can enter a new message and the model on the backend would output relevant classifications to the front end.
+**master.html** contains three visualizations based on the existing disaster response data. In the text field, you can enter a new message and the model on the backend would output relevant classifications to the front end.
 
 ## 5. Results
 
@@ -152,15 +152,15 @@ As you can see, the overall accuracy is not great: only ~26% of messages in test
 
 Based on this logic, Recall is our most important metric. Also called "Sensitivity" it is a ratio of True Positives to the Sum of True Positives and False Negatives. Recall measures classifier completeness: i.e., did we correctly identify all positive instances as such? 
 
-Precision, also referred to as "Positive Predictive Value" evaluates classifier exactness: TP / (TP + FP). It lets us ask the question: did we identify just the right number of positive instances, or did we overdo it? As I mentioned above, in the context of a disaster, recall is very important. However, we also don't want to mark all categories as positive for every message, that would overwhelm first responders. 
+Precision, also referred to as "Positive Predictive Value" evaluates classifier exactness: **TP / (TP + FP)**. It lets us ask the question: did we identify just the right number of positive instances, or did we overdo it? As I mentioned above, in the context of a disaster, recall is very important. However, we also don't want to mark all categories as positive for every message, that would overwhelm first responders. 
 
 That's where the F1 score comes in. It combines both Precision and Recall with a harmonic mean. 
 
-F1 = 2 * ( (Precision * Recall) / (Precision + Recall) )
+**F1 = 2 * ( (Precision * Recall) / (Precision + Recall) )**
 
 This approach ensures that F1 is somewhere between Precision and Recall, but gives larger weight to smaller numbers. In our case, the overall F1 score is 0.6316, which is smaller than the traditional average of Precision and Recall, because it's dragged down by lower Recall. 
 
-Now, that we have our terminology in place, let's focus on the Classification Report by category. F1 score is a good metric when we have imbalanced classes, i.e., when certain categories are under-represented in the data. In our case, the least common categories are Offer, Tools and Shops - each with less than 40 positive instances. Unfortunately, we were not able to capture these, as all metrics in the report are equal to zero. I should mention that Offer, Tools and Shops don't strike me as high emergency categories, so maybe that mis-classification is not to our detriment. 
+**Now, that we have our terminology in place, let's focus on the Classification Report by category**. F1 score is a good metric when we have imbalanced classes, i.e., when certain categories are under-represented in the data. In our case, the least common categories are Offer, Tools and Shops - each with less than 40 positive instances. Unfortunately, we were not able to capture these, as all metrics in the report are equal to zero. I should mention that Offer, Tools and Shops don't strike me as high emergency categories, so maybe that mis-classification is not to our detriment. 
 
 What I personally care about the most is correctly classifying Medical Help, Water, Food and Shelter, since people's lives depend on a timely response in these categories. Medical help has not faired well with our model - producing a Recall score of only 0.08, which means we had a high number of False Negatives. Luckily, the other three critical categories have Recall higher than 0.3. A better tuned model or a different classifier could do the trick of improving scores for these important categories.
 
