@@ -44,6 +44,9 @@ def clean_data(df):
     #Replace the original 'categories' column in df with the new category columns
     df = df.drop(['categories'], axis=1)
     df = pd.concat([df, categories], axis=1)
+    
+    #Ensure that 'Related' column has only 1's and 0's
+    df.related.replace(2,1,inplace=True)
 
     #Remove duplicate rows
     df = df.drop_duplicates()
