@@ -85,6 +85,7 @@ Files exist within the following folder structure:
 - **models**
 	- `train_classifier.py`
 	- `utils.py`					*Custom transformer*
+    - `classifier.pkl`				*model file produced from the ML pipeline
 
 The `train_classifier.py` file contains an ML pipeline consisting of three transformers and one RandomForestClassifier. Three transformers include CountVectorizer, TfidfTransformer and a custom transformer called NamedEntityChecker, which checks whether or not the message contains a named entity ('NNP' part of speech based on pos_tag). The pipeline is fine-tuned using GridSearchCV for optimal results.
 
@@ -93,7 +94,7 @@ The `train_classifier.py` file contains an ML pipeline consisting of three trans
 In order to output a web app with results, first the data must be cleaned and loaded into the database (ETL), then a classifier is run to produce a pickle file with the model (ML pipeline), finally a flask file containing code for the web app is run. 
 
 1. **ETL pipeline**: data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db
-2. **ML pipeline**: models/train_classifier.py data/DisasterResponse.db, which would save the classifier.pkl file (it's about 180 MB)
+2. **ML pipeline**: models/train_classifier.py data/DisasterResponse.db classifier.pkl
 3. **Flask file**: run.py
 
 **master.html** contains three visualizations based on the existing disaster response data. In the text field, you can enter a new message and the model on the backend would output relevant classifications to the front end.
